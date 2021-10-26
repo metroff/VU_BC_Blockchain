@@ -18,11 +18,26 @@ void Block::add_transaction(Transaction &transaction) {
 }
 
 string Block::get_merkle_root_hash(){
-    stringstream ss;
-    for (Transaction &t: transactions) {
-        ss << t.get_id();
+    vector<string> merkleTree;
+
+    merkleTree.reserve(transactions.size() * 2 + 16);
+
+    for (Transaction &t: transactions)
+        merkleTree.push_back(t.get_id());
+        
+    int j = 0;
+    for (int size = transactions.size(); size > 1; size = (size + 1) / 2)
+    {
+        for (int i = 0; i < size; i += 2)
+        {
+            int i2 = std::min(i + 1, size - 1);
+
+            merkleTree.push_back(myHash(merkleTree[j + i] + merkleTree[j + i2]));
+        }
+        j += size;
     }
-    return myHash(ss.str());
+    return (merkleTree.empty() ? string() : merkleTree.back());
+    
 }
 
 void Block::add_transactions(vector<Transaction> &_t) {
