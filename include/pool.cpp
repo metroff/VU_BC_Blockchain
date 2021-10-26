@@ -23,7 +23,15 @@ void Pool::generate_transaction_pool(Users& users, int count) {
             });
         }
 
-        transaction_pool.push_back(transaction);
+        add_transaction(transaction);
+    }
+}
+
+void Pool::add_transaction(Transaction& t) {
+    string hash = myHash(t.get_senders_hash() + t.get_reveivers_hash() + std::to_string(t.get_amount()));
+    if (hash == t.get_id())
+    {
+        transaction_pool.push_back(t);
     }
 }
 
@@ -32,12 +40,38 @@ Transaction Pool::get_transaction(int index) {
 }
 
 vector<Transaction> Pool::get_transactions(int count) {
+    std::unordered_map<string, int> user_map;
+    shuffle(count);
     vector<Transaction> transactions;
-    for (int i = 0; i < std::min(count, get_transaction_count()); i++)
+    for (int i = 0; i < std::min(count, get_transaction_count());)
     {
-        transactions.push_back(get_transaction(i));
+        Transaction t = get_transaction(i);
+
+        auto user = user_map.find(t.get_senders_hash());
+        if (user == user_map.end())
+        {
+            user_map[t.get_senders_hash()] = t.get_amount();
+        }
+        else {
+            user_map[t.get_senders_hash()] = user_map[t.get_senders_hash()] + t.get_amount();
+        }
+
+        if (t.get_sender()->get_balance() < user_map[t.get_senders_hash()])
+        {
+            remove_transaction(t);
+            continue;
+        }
+        transactions.push_back(t);
+        i++;
     }
     return transactions;
+}
+
+void Pool::shuffle(int num_random) {
+    for (int i = 0; i < std::min(num_random, get_transaction_count()); i++)
+    {
+        std::swap(transaction_pool[i], transaction_pool[generateIntInRange(i, get_transaction_count() - 1)]);
+    }
 }
 
 int Pool::get_transaction_count() {
@@ -56,7 +90,7 @@ stringstream Pool::to_sstream() {
     return ss; 
 }
 
-void Pool::remove_transaction(Transaction &_t) {
+void Pool::remove_transaction(const Transaction &_t) {
     vector<Transaction>::iterator it = std::find_if(transaction_pool.begin(), transaction_pool.end(),[&_t](Transaction& t) {
         return t.get_id() == _t.get_id();
     });
@@ -66,8 +100,8 @@ void Pool::remove_transaction(Transaction &_t) {
     }   
 }
 
-void Pool::remove_transactions(vector<Transaction> &_t) {
-    for (Transaction& t : _t){
+void Pool::remove_transactions(const vector<Transaction> &_t) {
+    for (const Transaction& t : _t){
         remove_transaction(t);
     }
 }

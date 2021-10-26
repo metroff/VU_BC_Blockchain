@@ -39,7 +39,7 @@ int main() {
     Pool pool;
     cout << "Generating transactions (" << transaction_count << ")" << endl;
     pool.generate_transaction_pool(users, transaction_count);
-    print_stream_file(pool.to_sstream(), "log/all_transactions.txt");
+    print_stream_file(pool.to_sstream(), "log/all_transactions_start.txt");
 
     string genesis_block_hash = "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -47,29 +47,52 @@ int main() {
     int index = 1;
 
     while(pool.get_transaction_count() > 0) {
+        int nonce_limit = 100000;
+
         if (!block_chain.is_empty()) {
             prev_block_hash = block_chain.get_last_block_hash();
         } else {
             prev_block_hash = genesis_block_hash;
         }
 
-        Block block(prev_block_hash, 1, 0.1);
+        vector<Block> potential_blocks;
+        potential_blocks.reserve(5);
 
-        vector<Transaction> transactions = pool.get_transactions(block_transactions);
-        block.add_transactions(transactions);
-
-        cout << "Mining block: " << std::to_string(index) << endl;
-        block.mine();
-
-        pool.remove_transactions(transactions);
-
-        for(Transaction &t: block.get_transactions()) {
-            t.execute();
+        for (int i = 0; i < 5; i++)
+        {
+            Block block(prev_block_hash, 1, 0.1);
+            block.add_transactions(pool.get_transactions(block_transactions));
+            potential_blocks.push_back(block);
         }
 
-        block_chain.add_block(block);
+        string abc[5] = { "A", "B", "C", "D", "E" };
 
-        print_stream_file(block.to_sstream(), "log/block-" + std::to_string(index) + ".txt", index);
+        cout << "Mining block: " << std::to_string(index) << endl;
+        bool block_found = false;
+        while (!block_found) {
+            int block_num = 0;
+            for (Block& block : potential_blocks) {
+                cout << "Mining block: " << index << abc[block_num] << endl;
+                block.mine(nonce_limit);
+                if (block.get_nonce() > nonce_limit) {
+                    block_num++;
+                    continue;
+                }
+
+                pool.remove_transactions(block.get_transactions());
+
+                block.execute_transactions();
+
+                block_chain.add_block(block);
+
+                print_stream_file(block.to_sstream(), "log/block-" + std::to_string(index) + ".txt", index);
+
+                block_found = true;
+                break;
+            }
+            
+            nonce_limit += 100000;
+        }
 
         index++;
     }

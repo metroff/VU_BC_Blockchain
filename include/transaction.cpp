@@ -1,14 +1,16 @@
 #include "transaction.hpp"
 
-Transaction::Transaction(User *sender, User *receiver, int amount) : sender{sender}, receiver{receiver}, amount{amount} {}
+Transaction::Transaction(User *sender, User *receiver, int amount) : sender{sender}, receiver{receiver}, amount{amount} {
+    this->transaction_id = myHash(sender->get_public_key() + receiver->get_public_key() + std::to_string(amount));
+}
 
 void Transaction::execute() {
     sender->set_balance(sender->get_balance() - amount);
     receiver->set_balance(receiver->get_balance() + amount);
 }
 
-string Transaction::get_id() {
-    return myHash(sender->get_name() + receiver->get_name() + std::to_string(amount));
+string Transaction::get_id() const {
+    return transaction_id;
 }
 
 User* Transaction::get_sender() {

@@ -22,9 +22,10 @@ class Block {
             double version);
 
         string get_merkle_root_hash();
-        void add_transactions(vector<Transaction>&);
+        void add_transactions(const vector<Transaction>&);
         void add_transaction(Transaction&);
-        void mine();
+        void mine(int);
+        void execute_transactions();
         string get_block_hash();
         vector<Transaction> get_transactions();
         stringstream to_sstream();
@@ -32,4 +33,5 @@ class Block {
         int get_transaction_count();
         int get_difficulty();
         int get_transaction_volume();
+        int get_nonce();
 };

@@ -14,7 +14,7 @@ class Transaction {
         Transaction(User*, User*, int);
         void execute();
 
-        string get_id();
+        string get_id() const;
         User* get_sender();
         User* get_receiver();
         string get_senders_hash();

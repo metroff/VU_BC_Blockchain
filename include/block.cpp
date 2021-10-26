@@ -40,17 +40,23 @@ string Block::get_merkle_root_hash(){
     
 }
 
-void Block::add_transactions(vector<Transaction> &_t) {
-    for (Transaction &t: _t) {
+void Block::add_transactions(const vector<Transaction> &_t) {
+    for (const Transaction &t: _t) {
         transactions.push_back(t);
     }
 }
 
-void Block::mine() {
+void Block::mine(int nonce_limit) {
     string block_hash = get_block_hash();
-    while(!check_hash_difficulty(block_hash)) {
+    while(!check_hash_difficulty(block_hash) && nonce <= nonce_limit) {
         nonce++;    
         block_hash = get_block_hash();
+    }
+}
+
+void Block::execute_transactions() {
+    for (Transaction& t : transactions) {
+        t.execute();
     }
 }
 
@@ -91,6 +97,10 @@ int Block::get_transaction_volume(){
         output += t.get_amount();
     }
     return output;
+}
+
+int Block::get_nonce() {
+    return nonce;
 }
 
 stringstream Block::to_sstream() {
