@@ -69,7 +69,7 @@ int main() {
 
         block_chain.add_block(block);
 
-        print_stream_file(block.to_sstream(), "log/block-" + std::to_string(index), index);
+        print_stream_file(block.to_sstream(), "log/block-" + std::to_string(index) + ".txt", index);
 
         index++;
     }

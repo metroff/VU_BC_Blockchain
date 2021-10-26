@@ -16,7 +16,7 @@ void Pool::generate_transaction_pool(Users& users, int count) {
         });
 
         while (it != transaction_pool.end()) {
-            Transaction transaction(sender, receiver, generateIntInRange(0, sender->get_balance()/2));
+            transaction = Transaction(sender, receiver, generateIntInRange(0, sender->get_balance()/2));
 
             it = std::find_if(transaction_pool.begin(), transaction_pool.end(), [&transaction](Transaction &t) {
                 return transaction.get_id() == t.get_id();

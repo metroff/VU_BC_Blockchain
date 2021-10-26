@@ -10,7 +10,7 @@ void Users::generate_users(int count){
         });
 
         while (it != users.end()) {
-            User user("User-"+std::to_string(i), generateIntInRange(MIN_BALANCE, MAX_BALANCE));
+            user = User("User-"+std::to_string(i), generateIntInRange(MIN_BALANCE, MAX_BALANCE));
 
             it = std::find_if(users.begin(), users.end(), [&user](User &u) {
                 return u.get_public_key() == user.get_public_key();
