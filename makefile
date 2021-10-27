@@ -1,6 +1,6 @@
 SRC_DIR := ./include
 OBJ_DIR := ./
-CPPFLAGS := -O3 -std=c++11
+CPPFLAGS := -O3 -std=c++11 -fopenmp
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 

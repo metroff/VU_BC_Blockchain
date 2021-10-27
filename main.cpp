@@ -6,6 +6,7 @@
 #include "include/block.hpp"
 #include "include/blockchain.hpp"
 #include "include/console.hpp"
+#include <omp.h>
 #include <sys/stat.h>
 
 bool checkIfFileExists(const string& fileName){
@@ -39,7 +40,7 @@ int main() {
     Pool pool;
     cout << "Generating transactions (" << transaction_count << ")" << endl;
     pool.generate_transaction_pool(users, transaction_count);
-    print_stream_file(pool.to_sstream(), "log/all_transactions_start.txt");
+    print_stream_file(pool.to_sstream(), "log/all_transactions.txt");
 
     string genesis_block_hash = "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -68,17 +69,39 @@ int main() {
         string abc[5] = { "A", "B", "C", "D", "E" };
 
         cout << "Mining block: " << std::to_string(index) << endl;
-        bool block_found = false;
-        while (!block_found) {
-            int block_num = 0;
-            for (Block& block : potential_blocks) {
-                cout << "Mining block: " << index << abc[block_num] << endl;
-                block.mine(nonce_limit);
-                if (block.get_nonce() > nonce_limit) {
-                    block_num++;
-                    continue;
+
+        while (true) {
+            cout << "Nonce limit: " << nonce_limit << ", ";
+
+            #pragma omp parallel for
+            for (int i = 0; i < 5; i++)
+            {
+                #pragma omp critical 
+                {
+                    cout << index << abc[i] << " ";
                 }
 
+                potential_blocks[i].mine(nonce_limit);
+            }
+
+            cout << endl;
+
+            bool block_found = false;
+            Block block = potential_blocks[0];
+            int min_nonce = potential_blocks[0].get_nonce();
+
+            for (Block& b : potential_blocks) {
+                if (b.get_nonce() <= nonce_limit) {
+                    if (b.get_nonce() < min_nonce)
+                    {
+                        min_nonce = b.get_nonce();
+                        block = b;
+                    }
+                    block_found = true;
+                }
+            }
+            if (block_found)
+            {
                 pool.remove_transactions(block.get_transactions());
 
                 block.execute_transactions();
@@ -87,10 +110,9 @@ int main() {
 
                 print_stream_file(block.to_sstream(), "log/block-" + std::to_string(index) + ".txt", index);
 
-                block_found = true;
                 break;
             }
-            
+
             nonce_limit += 100000;
         }
 

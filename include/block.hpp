@@ -17,6 +17,7 @@ class Block {
         bool check_hash_difficulty(string&);
 
     public:
+        Block();
         Block(string prev_block_hash,
             int difficulty_target,
             double version);

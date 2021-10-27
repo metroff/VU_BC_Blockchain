@@ -1,5 +1,7 @@
 #include "block.hpp"
 
+Block::Block() : prev_block_hash{ "" }, difficulty_target{ 0 }, version{ 0 }, nonce{ 1 }, timestamp{ "" } {};
+
 Block::Block(string prev_block_hash, int difficulty_target, double version) : 
     prev_block_hash{prev_block_hash}, difficulty_target{difficulty_target}, version{version} {
     nonce = 1;
