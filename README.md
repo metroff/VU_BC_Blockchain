@@ -57,6 +57,7 @@ Sugeneruojami vartotojai, transakcijos ir paleidžiamas while loop, kurio metu:
 - Sugeneruojamas naujas blokas.
 - Į bloką įdedamos transakcijos.
 - Blokas yra iškasamas.
+  - Kasami 5 blokai lygiagrečiai, grąžinamas greičiausiai "iškastas" blokas.
 - Bloko transakcijos pašalinamos iš bendro pool'o.
 - Kiekviena transakcija yra įvykdoma.
 - Blokas atspausdinamas į failą.
