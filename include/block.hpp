@@ -26,7 +26,7 @@ class Block {
         void add_transactions(const vector<Transaction>&);
         void add_transaction(Transaction&);
         void mine(int);
-        void execute_transactions();
+        void confirm_transactions();
         string get_block_hash();
         vector<Transaction> get_transactions();
         stringstream to_sstream();

@@ -56,9 +56,9 @@ void Block::mine(int nonce_limit) {
     }
 }
 
-void Block::execute_transactions() {
+void Block::confirm_transactions() {
     for (Transaction& t : transactions) {
-        t.execute();
+        t.confirm();
     }
 }
 

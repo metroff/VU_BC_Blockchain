@@ -8,28 +8,35 @@ void Pool::generate_transaction_pool(Users& users, int count) {
         while(sender->get_public_key() == receiver->get_public_key()) {
             receiver = users.get_random_user();
         }
-        
-        Transaction transaction(sender, receiver, generateIntInRange(0, sender->get_balance()/2));
+     
+        int amount = generateIntInRange(0, sender->get_balance() / 2);
 
-        vector<Transaction>::iterator it = std::find_if(transaction_pool.begin(), transaction_pool.end(), [&transaction](Transaction &t) {
-            return transaction.get_id() == t.get_id();
-        });
+        Transaction transaction;
 
-        while (it != transaction_pool.end()) {
-            transaction = Transaction(sender, receiver, generateIntInRange(0, sender->get_balance()/2));
-
-            it = std::find_if(transaction_pool.begin(), transaction_pool.end(), [&transaction](Transaction &t) {
-                return transaction.get_id() == t.get_id();
-            });
+        int sum = 0;
+        auto available_outputs = sender->get_unspent_outputs();
+        for (int i = 0; i < available_outputs.size(); i++)
+        {
+            TransactionInput input;
+            sum += available_outputs[i]->amount;
+            input.prev_transaction = available_outputs[i];
+            transaction.add_input(input);
+            if (sum >= amount) {
+                break;
+            } 
         }
+        
+        transaction.add_output(std::shared_ptr<TransactionOutput>(new TransactionOutput(amount, receiver)));
+        transaction.add_output(std::shared_ptr<TransactionOutput>(new TransactionOutput(sum-amount, sender)));
+        transaction.set_id();
+        transaction.execute();
 
         add_transaction(transaction);
     }
 }
 
 void Pool::add_transaction(Transaction& t) {
-    string hash = myHash(t.get_senders_hash() + t.get_reveivers_hash() + std::to_string(t.get_amount()));
-    if (hash == t.get_id())
+    if (t.get_id() == t.generate_id())
     {
         transaction_pool.push_back(t);
     }
@@ -40,23 +47,13 @@ Transaction Pool::get_transaction(int index) {
 }
 
 vector<Transaction> Pool::get_transactions(int count) {
-    std::unordered_map<string, int> user_map;
     shuffle(count);
     vector<Transaction> transactions;
     for (int i = 0; i < std::min(count, get_transaction_count());)
     {
         Transaction t = get_transaction(i);
 
-        auto user = user_map.find(t.get_senders_hash());
-        if (user == user_map.end())
-        {
-            user_map[t.get_senders_hash()] = t.get_amount();
-        }
-        else {
-            user_map[t.get_senders_hash()] = user_map[t.get_senders_hash()] + t.get_amount();
-        }
-
-        if (t.get_sender()->get_balance() < user_map[t.get_senders_hash()])
+        if (t.get_amount() > t.get_input_amount())
         {
             remove_transaction(t);
             continue;
@@ -81,11 +78,7 @@ int Pool::get_transaction_count() {
 stringstream Pool::to_sstream() {
     stringstream ss;
     for (Transaction &transaction: transaction_pool) {
-        ss << "TANSACTION ID: " << transaction.get_id() << endl
-        << "SENDERS_PUBLIC_KEY: " << transaction.get_senders_hash() << endl
-        << "RECEIVERS_PUBLIC_KEY: " << transaction.get_reveivers_hash() << endl
-        << "AMOUNT: " << transaction.get_amount() << endl;
-        ss << string(50, '-') << endl;
+        ss << transaction.to_sstream().rdbuf();
     }
     return ss; 
 }

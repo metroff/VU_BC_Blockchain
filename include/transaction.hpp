@@ -2,23 +2,35 @@
 #include "myLib.hpp"
 #include "user.hpp"
 #include "hash.hpp"
+#include "transaction_output.hpp"
+
+struct TransactionInput {
+    int index;
+    std::shared_ptr<TransactionOutput> prev_transaction;
+    User* owner;
+};
 
 class Transaction {
     private:
         string transaction_id;
-        User* sender;
-        User* receiver;
-        int amount;
+        vector<TransactionInput> inputs;
+        vector<std::shared_ptr<TransactionOutput>> outputs;
+        bool confirmed;
+
+        stringstream inputs_to_sstream();
+        stringstream outputs_to_sstream();
 
     public:
-        Transaction(User*, User*, int);
+        Transaction();
         void execute();
+        void confirm();
+        void add_input(TransactionInput);
+        void add_output(std::shared_ptr<TransactionOutput> const&);
+        int get_amount();
+        int get_input_amount();
 
         string get_id() const;
-        User* get_sender();
-        User* get_receiver();
-        string get_senders_hash();
-        string get_reveivers_hash();
-        int get_amount();
+        void set_id();
+        string generate_id();
         stringstream to_sstream();
 };

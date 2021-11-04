@@ -104,7 +104,7 @@ int main() {
             {
                 pool.remove_transactions(block.get_transactions());
 
-                block.execute_transactions();
+                block.confirm_transactions();
 
                 block_chain.add_block(block);
 
