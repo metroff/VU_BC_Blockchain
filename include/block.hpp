@@ -3,6 +3,7 @@
 #include "transaction.hpp"
 #include <algorithm>
 #include "time.hpp"
+#include "omp.h"
 
 class Block {
     private:
@@ -13,6 +14,7 @@ class Block {
         int nonce;
         int difficulty_target;
         double version;
+        bool mined;
         vector<Transaction> transactions;
         bool check_hash_difficulty(string&);
 
@@ -25,7 +27,7 @@ class Block {
         string get_merkle_root_hash();
         void add_transactions(const vector<Transaction>&);
         void add_transaction(Transaction&);
-        void mine(int);
+        void mine(int&);
         void confirm_transactions();
         string get_block_hash();
         vector<Transaction> get_transactions();
@@ -35,4 +37,5 @@ class Block {
         int get_difficulty();
         int get_transaction_volume();
         int get_nonce();
+        bool is_mined();
 };

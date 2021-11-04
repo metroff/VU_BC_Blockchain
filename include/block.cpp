@@ -1,9 +1,9 @@
 #include "block.hpp"
 
-Block::Block() : prev_block_hash{ "" }, difficulty_target{ 0 }, version{ 0 }, nonce{ 1 }, timestamp{ "" } {};
+Block::Block() : prev_block_hash{ "" }, difficulty_target{ 0 }, version{ 0 }, nonce{ 1 }, timestamp{ "" }, mined{false} {};
 
 Block::Block(string prev_block_hash, int difficulty_target, double version) : 
-    prev_block_hash{prev_block_hash}, difficulty_target{difficulty_target}, version{version} {
+    prev_block_hash{prev_block_hash}, difficulty_target{difficulty_target}, version{version}, mined{ false } {
     nonce = 1;
     timestamp = get_timestamp_now();
 }
@@ -48,12 +48,23 @@ void Block::add_transactions(const vector<Transaction> &_t) {
     }
 }
 
-void Block::mine(int nonce_limit) {
-    string block_hash = get_block_hash();
-    while(!check_hash_difficulty(block_hash) && nonce <= nonce_limit) {
-        nonce++;    
+void Block::mine(int& can_mine) {
+    while(can_mine == 1) {    
         block_hash = get_block_hash();
+        if (check_hash_difficulty(block_hash))
+        {
+            #pragma omp atomic
+            can_mine -= 1;
+
+            mined = true;
+            return;
+        }
+        nonce++;
     }
+}
+
+bool Block::is_mined() {
+    return mined;
 }
 
 void Block::confirm_transactions() {

@@ -71,6 +71,7 @@ int main() {
         cout << "Mining block: " << std::to_string(index) << endl;
 
         while (true) {
+            int MINE_BLOCK = 1;
             cout << "Nonce limit: " << nonce_limit << ", ";
 
             #pragma omp parallel for
@@ -81,7 +82,7 @@ int main() {
                     cout << index << abc[i] << " ";
                 }
 
-                potential_blocks[i].mine(nonce_limit);
+                potential_blocks[i].mine(MINE_BLOCK);
             }
 
             cout << endl;
@@ -91,14 +92,19 @@ int main() {
             int min_nonce = potential_blocks[0].get_nonce();
 
             for (Block& b : potential_blocks) {
-                if (b.get_nonce() <= nonce_limit) {
+                if (b.is_mined())
+                {
+                    block_found = true;
+                    block = b;
+                }
+                /*if (b.get_nonce() <= nonce_limit) {
                     if (b.get_nonce() < min_nonce)
                     {
                         min_nonce = b.get_nonce();
                         block = b;
                     }
                     block_found = true;
-                }
+                }*/
             }
             if (block_found)
             {
