@@ -6,6 +6,7 @@
 #include "include/block.hpp"
 #include "include/blockchain.hpp"
 #include "include/console.hpp"
+#include "include/timer.hpp"
 #include <omp.h>
 #include <sys/stat.h>
 
@@ -15,6 +16,11 @@ bool checkIfFileExists(const string& fileName){
 }
 
 int main() {
+    Timer timer;
+    const int minTimeInSec = 5;
+    const int maxTimeInSec = 10;
+    int timesUnderTime = 0, timesAboveTime = 0;
+
     if (!checkIfFileExists("log")) {
         if(std::system("mkdir log") == 0) {
             cout << "Created log folder." << endl;
@@ -47,6 +53,8 @@ int main() {
     string prev_block_hash;
     int index = 1;
 
+    int difficulty_target = 1;
+
     while(pool.get_transaction_count() > 0) {
         int nonce_limit = 100000;
 
@@ -61,7 +69,7 @@ int main() {
 
         for (int i = 0; i < 5; i++)
         {
-            Block block(prev_block_hash, 1, 0.1);
+            Block block(prev_block_hash, difficulty_target, 0.1);
             block.add_transactions(pool.get_transactions(block_transactions));
             potential_blocks.push_back(block);
         }
@@ -74,6 +82,8 @@ int main() {
             int MINE_BLOCK = 1;
             cout << "Nonce limit: " << nonce_limit << ", ";
 
+            timer.reset();
+
             #pragma omp parallel for
             for (int i = 0; i < 5; i++)
             {
@@ -83,6 +93,25 @@ int main() {
                 }
 
                 potential_blocks[i].mine(MINE_BLOCK);
+            }
+
+            double time = timer.elapsed();
+
+            if (time < minTimeInSec) {
+                timesUnderTime += 1;
+                if (timesUnderTime > 2) {
+                    difficulty_target++;
+                    timesUnderTime = 0;
+                }
+            } else if (time > maxTimeInSec && difficulty_target > 1) {
+                timesAboveTime += 1;
+                if (timesAboveTime > 2) {
+                    difficulty_target--;
+                    timesAboveTime = 0;
+                }
+            } else {
+                timesUnderTime = 0;
+                timesAboveTime = 0;
             }
 
             cout << endl;
