@@ -32,6 +32,8 @@ Difficulty Target reikalavimą, t.y., hash'o pradžioje esančių nulių tam tik
 ---
 
 ## Programos paleidimas
+Šiai programai reikalinga [libbitcoin-system](https://github.com/libbitcoin/libbitcoin-system#installation) biblioteka.
+
 Programa paleidžiama komandinėje eilutėje naudojant `./main`.
 ```shell
 ./main

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "time.hpp"
 #include "omp.h"
+#include <bitcoin/system.hpp>
 
 class Block {
     private:
@@ -25,6 +26,7 @@ class Block {
             double version);
 
         string get_merkle_root_hash();
+        bc::hash_digest create_merkle(bc::hash_list&);
         void add_transactions(const vector<Transaction>&);
         void add_transaction(Transaction&);
         void mine(int&);
